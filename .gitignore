@@ -1,0 +1,19 @@
+# Archivos internos de RStudio y de la sesión de R (no forman parte del proyecto)
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+Rplots.pdf
+
+# Archivos intermedios de LaTeX / knitr
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+**/figure/
+**/cache/
+*_cache/
+*_files/

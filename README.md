@@ -1,57 +1,36 @@
-# Democracia e igualdad de género en el mundo (1800-2022)
+# Democracia e igualdad de género en el mundo
 
-Proyecto reproducible de Ciencia de Datos · Módulo 8, Reto 2.
-Autora: Idoia Garriz.
+Proyecto de Ciencia de Datos reproducible · Módulo 8, Reto 2 · Idoia Garriz Galan
 
-Este proyecto estudia cómo han evolucionado la democracia y la igualdad de género
-en los distintos países del mundo, y qué relación hay entre ambas. Usa datos
-públicos de [Gapminder](https://www.gapminder.org/). Está pensado para el
-profesorado de historia universal (bachillerato y universidad) y para
-divulgadores.
+Analizamos con datos de [Gapminder](https://www.gapminder.org/) cómo han
+evolucionado la democracia y la igualdad de género en el mundo, y si avanzan juntas.
 
 ## Objetivos
 
-*(Pendiente: se completa en el paso 2.)*
+**Objetivo principal:** describir la evolución de la democracia y de la igualdad
+de género en el mundo y estudiar su relación.
 
-## Estructura del repositorio
+**Objetivos específicos:**
+
+1. Ver cómo ha cambiado el número de democracias y autocracias desde 1800.
+2. Ver cómo ha crecido el porcentaje de mujeres en los parlamentos por región desde 1945.
+3. Comprobar si los países más democráticos son también los más igualitarios.
+
+## Estructura
 
 ```
-├── README.md
-├── proyecto_democracia_genero.Rproj   <- abrir este archivo en RStudio
-├── Datos/
-│   ├── original/        <- ficheros CSV tal como se descargan de Gapminder
-│   ├── depuracion.R     <- código de importación y depuración
-│   └── depurada/        <- tabla final país-año (.rds y .csv)
-├── Analisis_exploratorio/
-│   ├── eda.R            <- análisis exploratorio (Reto 1)
-│   ├── figuras/
-│   └── resultados/
-├── Dashboard/           <- código (.Rmd) y dashboard (.html)
-├── Informe/             <- informe técnico con knitr (.Rnw y .pdf)
-└── Presentacion/        <- presentación con R Markdown
+Datos/           datos originales, código de depuración y datos depurados
+Dashboard/       código y dashboard en HTML
+Informe/         informe técnico (knitr) en PDF
+Presentacion/    presentación (R Markdown)
 ```
 
-## Cómo reproducir el proyecto
+## Cómo reproducirlo
 
-1. Clonar o descargar el repositorio y abrir `proyecto_democracia_genero.Rproj` en RStudio.
-2. Instalar los paquetes necesarios:
-   ```r
-   install.packages(c("tidyverse", "here", "flexdashboard", "plotly",
-                      "DT", "knitr", "kableExtra", "rmarkdown", "tinytex"))
-   tinytex::install_tinytex()   # solo si no hay LaTeX instalado (para el PDF)
-   ```
-3. Ejecutar `Datos/depuracion.R`. Si los ficheros de `Datos/original/` ya existen,
-   no se vuelven a descargar.
-4. Compilar el dashboard, el informe y la presentación desde sus carpetas
-   (botón *Knit* / *Compile PDF* de RStudio).
+1. Abrir `proyecto_democracia_genero.Rproj` en RStudio.
+2. Ejecutar `Datos/depuracion.R`.
+3. Compilar los archivos de `Dashboard/`, `Informe/` y `Presentacion/`.
 
-Todas las rutas se construyen con el paquete `here`, a partir de la carpeta del
-proyecto, de modo que no hay referencias a directorios locales.
+Paquetes necesarios: `tidyverse`, `here`, `flexdashboard`, `plotly`, `knitr` y `rmarkdown`.
 
-## Fuente de los datos
-
-Indicadores de Gapminder distribuidos en los repositorios de
-[open-numbers](https://github.com/open-numbers) (`ddf--gapminder--fasttrack` y
-`ddf--gapminder--systema_globalis`), descargados en versiones fijas (commits)
-para garantizar la reproducibilidad. Licencia de los datos:
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Datos: Gapminder (repositorios de [open-numbers](https://github.com/open-numbers)), licencia CC BY 4.0.

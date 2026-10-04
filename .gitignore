@@ -6,6 +6,7 @@
 Rplots.pdf
 
 # Archivos intermedios de LaTeX / knitr
+Informe/*.tex
 *.aux
 *.log
 *.out

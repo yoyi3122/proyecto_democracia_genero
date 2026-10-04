@@ -1,0 +1,150 @@
+% !Rnw weave = knitr
+\documentclass[11pt, a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish, es-tabla]{babel}
+\usepackage[margin = 2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\title{Democracia e igualdad de género en el mundo\\[0.3em]
+       \large Módulo 8, Reto 2}
+\author{Idoia Garriz Galan}
+\date{}
+
+\begin{document}
+
+<<setup, include = FALSE>>=
+# Opciones generales: no mostrar el código en el PDF
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
+                      fig.align = "center", out.width = "85%")
+
+library(tidyverse)
+library(here)
+
+# Datos depurados (generados por Datos/depuracion.R)
+datos <- readRDS(here("Datos", "depurada", "democracia_genero.rds"))
+
+# Año de referencia: el último con datos completos de Polity5
+anio_ref <- 2018
+datos_ref <- datos |> filter(anio == anio_ref)
+
+# Función para escribir números con coma decimal
+num <- function(x, dec = 0) format(round(x, dec), nsmall = dec, decimal.mark = ",", big.mark = ".")
+
+# Número de países de cada régimen por año (objetivo 1)
+regimenes <- datos |> filter(!is.na(regimen)) |> count(anio, regimen)
+n_reg <- function(a, r) regimenes$n[regimenes$anio == a & regimenes$regimen == r]
+
+# Mediana del % de mujeres en el parlamento por región (objetivo 2)
+parl <- datos |>
+  filter(!is.na(mujeres_parlamento)) |>
+  group_by(anio, region4) |>
+  summarise(mediana = median(mujeres_parlamento), .groups = "drop")
+parl_mundo <- function(a) median(datos$mujeres_parlamento[datos$anio == a], na.rm = TRUE)
+
+# Correlación entre democracia e igualdad de género en 2018 (objetivo 3)
+rho_igualdad <- cor(datos_ref$polity, datos_ref$idea_igualdad_genero,
+                    method = "spearman", use = "complete.obs")
+rho_parlamento <- cor(datos_ref$polity, datos_ref$mujeres_parlamento,
+                      method = "spearman", use = "complete.obs")
+@
+
+\maketitle
+
+\section{Introducción}
+
+Este informe resume los principales resultados del proyecto. El \textbf{objetivo
+principal} es describir la evolución de la democracia y de la igualdad de género
+en el mundo y estudiar su relación. Los objetivos específicos son:
+
+\begin{enumerate}
+  \item Ver cómo ha cambiado el número de democracias y autocracias desde 1800.
+  \item Ver cómo ha crecido el porcentaje de mujeres en los parlamentos por región desde 1945.
+  \item Comprobar si los países más democráticos son también los más igualitarios.
+\end{enumerate}
+
+Los datos proceden de Gapminder y contienen \Sexpr{num(nrow(datos))} observaciones
+(una por país y año) de \Sexpr{n_distinct(datos$geo)} países entre
+\Sexpr{min(datos$anio)} y \Sexpr{max(datos$anio)}. La democracia se mide con el
+índice \textbf{Polity5} (de $-10$, autocracia, a $+10$, democracia), que permite
+clasificar cada país como autocracia, anocracia (régimen intermedio) o democracia.
+La igualdad de género se mide con el índice de \textbf{International IDEA}
+(0--100) y con el \textbf{porcentaje de escaños parlamentarios ocupados por mujeres}.
+Como Polity5 termina en \Sexpr{anio_ref}, ese es el año de referencia.
+
+\section{Resultados}
+
+\subsection{Olas de democratización}
+
+El número de democracias no ha crecido de forma continua, sino en «olas».
+En 1922 había \Sexpr{n_reg(1922, "Democracia")} democracias, pero en 1942,
+en plena Segunda Guerra Mundial, solo quedaban \Sexpr{n_reg(1942, "Democracia")}.
+Con la descolonización aparecieron muchos países nuevos, en su mayoría autocráticos:
+en 1976 se contaban \Sexpr{n_reg(1976, "Autocracia")} autocracias. Desde el fin de la
+Guerra Fría las democracias se han multiplicado hasta llegar a
+\Sexpr{n_reg(anio_ref, "Democracia")} en \Sexpr{anio_ref}, frente a
+\Sexpr{n_reg(anio_ref, "Autocracia")} autocracias.
+
+\subsection{Mujeres en los parlamentos}
+
+La presencia de mujeres en los parlamentos ha crecido en todo el mundo: la mediana
+de los países pasa del \Sexpr{num(parl_mundo(1975), 1)}\,\% en 1975 al
+\Sexpr{num(parl_mundo(2021), 1)}\,\% en 2021. El avance es más rápido en Europa y
+América y más lento en Asia. La tabla~\ref{tab:resumen} resume la situación de cada
+región en \Sexpr{anio_ref}.
+
+<<tabla, results = "asis">>=
+# Tabla resumen por región en el año de referencia
+tabla <- datos_ref |>
+  mutate(Región = factor(region4, levels = c("África", "América", "Asia", "Europa"))) |>
+  group_by(Región) |>
+  summarise(
+    `Países` = n(),
+    `\\% democracias` = 100 * mean(regimen == "Democracia", na.rm = TRUE),
+    `Polity5` = median(polity, na.rm = TRUE),
+    `Igualdad IDEA` = median(idea_igualdad_genero, na.rm = TRUE),
+    `\\% parlamentarias` = median(mujeres_parlamento, na.rm = TRUE)
+  )
+
+knitr::kable(tabla, format = "latex", booktabs = TRUE, digits = 1,
+             format.args = list(decimal.mark = ","), escape = FALSE,
+             caption = paste("Indicadores por región en", anio_ref,
+                             "(Polity5, IDEA y \\% de parlamentarias: medianas de los países)"),
+             label = "resumen")
+@
+
+\subsection{Democracia e igualdad de género}
+
+La figura~\ref{fig:relacion} muestra que los países más democráticos tienden a
+tener una mayor igualdad de género: la correlación de Spearman entre Polity5 y el
+índice de IDEA es de \Sexpr{num(rho_igualdad, 2)}. En cambio, la relación con el
+porcentaje de mujeres en el parlamento es mucho más débil
+($\rho$ = \Sexpr{num(rho_parlamento, 2)}): hay regímenes poco democráticos, como
+Ruanda o Cuba, con más parlamentarias que la mayoría de las democracias.
+
+<<relacion, fig.cap = "Democracia (Polity5) e igualdad de género (IDEA) en 2018. Cada punto es un país.", fig.height = 4.5, fig.width = 7>>=
+ggplot(datos_ref |> filter(!is.na(polity), !is.na(idea_igualdad_genero)),
+       aes(polity, idea_igualdad_genero, colour = region4)) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(aes(group = 1), method = "loess", colour = "grey30", se = FALSE) +
+  scale_colour_manual(values = c(África = "#E69F00", América = "#009E73",
+                                 Asia = "#CC79A7", Europa = "#0072B2")) +
+  labs(x = "Democracia (Polity5)", y = "Igualdad de género (IDEA, 0-100)",
+       colour = "Región") +
+  theme_minimal()
+@
+
+\section{Conclusiones}
+
+\begin{itemize}
+  \item La democracia se ha extendido por olas, con retrocesos importantes en el
+        periodo de entreguerras y un gran avance desde 1989.
+  \item La presencia de mujeres en los parlamentos ha aumentado en todas las
+        regiones, sobre todo desde el año 2000.
+  \item Democracia e igualdad de género están relacionadas, pero no siempre van
+        juntas: la representación parlamentaria femenina depende poco del régimen.
+        Se trata de correlaciones, no de relaciones causales.
+\end{itemize}
+
+\end{document}

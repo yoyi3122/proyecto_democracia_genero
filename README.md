@@ -2,7 +2,7 @@
 
 Módulo 8, Reto 2 · Idoia Garriz Galan
 
-Se alanizan los datos de [Gapminder](https://www.gapminder.org/) para analizar e ilustrar la evolución de la democracia y la igualdad de género en el mundo, y si avanzan juntas.
+Se alanizan los datos de Gapminder para analizar e ilustrar la evolución de la democracia y la igualdad de género en el mundo, y si avanzan juntas.
 
 ## Objetivos
 
@@ -32,4 +32,3 @@ Presentacion/    presentación
 
 Paquetes necesarios: `tidyverse`, `here`, `flexdashboard`, `plotly`, `knitr` y `rmarkdown`.
 
-Datos: Gapminder (repositorios de [open-numbers](https://github.com/open-numbers)), licencia CC BY 4.0.

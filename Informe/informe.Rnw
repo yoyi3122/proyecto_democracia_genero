@@ -5,6 +5,7 @@
 \usepackage[spanish, es-tabla]{babel}
 \usepackage[margin = 2.5cm]{geometry}
 \usepackage{booktabs}
+\usepackage{float}
 \usepackage{hyperref}
 
 \title{Democracia e igualdad de género en el mundo\\[0.3em]
@@ -17,7 +18,8 @@
 <<setup, include = FALSE>>=
 # Opciones generales: no mostrar el código en el PDF
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
-                      fig.align = "center", out.width = "85%")
+                      fig.align = "center", out.width = "85%",
+                      fig.pos = "H")  # cada figura justo donde se cita
 
 library(tidyverse)
 library(here)
@@ -112,6 +114,42 @@ knitr::kable(tabla, format = "latex", booktabs = TRUE, digits = 1,
              caption = paste("Indicadores por región en", anio_ref,
                              "(Polity5, IDEA y \\% de parlamentarias: medianas de los países)"),
              label = "resumen")
+@
+
+<<atipicos>>=
+# País con más parlamentarias de cada región (para citarlo en el texto)
+max_parl <- datos_ref |>
+  filter(!is.na(mujeres_parlamento)) |>
+  group_by(region4) |>
+  slice_max(mujeres_parlamento, n = 1)
+pais_max <- function(r) max_parl$pais[max_parl$region4 == r]
+valor_max <- function(r) num(max_parl$mujeres_parlamento[max_parl$region4 == r], 1)
+@
+
+La figura~\ref{fig:boxplot} muestra la distribución de los dos indicadores de
+género dentro de cada región. Europa destaca en el índice de igualdad de IDEA,
+mientras que en el porcentaje de parlamentarias Europa y América están muy igualadas.
+Los valores atípicos son llamativos: \Sexpr{pais_max("África")}, con un
+\Sexpr{valor_max("África")}\,\% de parlamentarias, y
+\Sexpr{pais_max("Asia")}, con un \Sexpr{valor_max("Asia")}\,\%, superan a la
+mayoría de las democracias sin serlo.
+
+<<boxplot, fig.cap = "Igualdad de género (IDEA) y \\% de mujeres en el parlamento por región en 2018. Cada caja resume los países de la región; los puntos son valores atípicos.", fig.height = 3.5, fig.width = 8>>=
+datos_ref |>
+  select(pais, region4, idea_igualdad_genero, mujeres_parlamento) |>
+  pivot_longer(c(idea_igualdad_genero, mujeres_parlamento),
+               names_to = "indicador", values_to = "valor") |>
+  filter(!is.na(valor)) |>
+  mutate(indicador = recode(indicador,
+                            idea_igualdad_genero = "Igualdad de género (IDEA, 0-100)",
+                            mujeres_parlamento = "Mujeres en el parlamento (%)")) |>
+  ggplot(aes(region4, valor, fill = region4)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = 21, outlier.size = 2) +
+  scale_fill_manual(values = c(África = "#E69F00", América = "#009E73",
+                               Asia = "#CC79A7", Europa = "#0072B2"), guide = "none") +
+  facet_wrap(~ indicador, scales = "free_y") +
+  labs(x = NULL, y = NULL) +
+  theme_minimal()
 @
 
 \subsection{Democracia e igualdad de género}

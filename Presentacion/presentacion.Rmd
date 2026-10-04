@@ -1,0 +1,151 @@
+---
+title: "Democracia e igualdad de género en el mundo"
+subtitle: "Módulo 8, Reto 2"
+author: "Idoia Garriz Galan"
+output:
+  ioslides_presentation:
+    widescreen: true
+---
+
+```{r setup, include = FALSE}
+# Opciones generales: no mostrar el código en las diapositivas
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
+                      fig.align = "center", fig.width = 9, fig.height = 4)
+
+library(tidyverse)
+library(here)
+
+# Datos depurados (generados por Datos/depuracion.R)
+datos <- readRDS(here("Datos", "depurada", "democracia_genero.rds"))
+
+# Año de referencia: el último con datos completos de Polity5
+anio_ref <- 2018
+datos_ref <- datos |> filter(anio == anio_ref)
+
+# Colores 
+col_regimen <- c(Autocracia = "#D55E00", Anocracia = "#E69F00", Democracia = "#0072B2")
+col_region  <- c(África = "#E69F00", América = "#009E73", Asia = "#CC79A7", Europa = "#0072B2")
+
+# Función para escribir números con coma decimal
+num <- function(x, dec = 0) format(round(x, dec), nsmall = dec, decimal.mark = ",", big.mark = ".")
+
+# Cálculos que se citan en el texto
+regimenes <- datos |> filter(!is.na(regimen)) |> count(anio, regimen)
+n_reg <- function(a, r) regimenes$n[regimenes$anio == a & regimenes$regimen == r]
+parl_mundo <- function(a) median(datos$mujeres_parlamento[datos$anio == a], na.rm = TRUE)
+rho_igualdad <- cor(datos_ref$polity, datos_ref$idea_igualdad_genero,
+                    method = "spearman", use = "complete.obs")
+rho_parlamento <- cor(datos_ref$polity, datos_ref$mujeres_parlamento,
+                      method = "spearman", use = "complete.obs")
+```
+
+## Objetivos
+
+**Objetivo principal:** describir la evolución de la democracia y de la igualdad
+de género en el mundo y estudiar su relación.
+
+**Objetivos específicos:**
+
+1. Ver cómo ha cambiado el número de democracias y autocracias desde 1800.
+2. Ver cómo ha crecido el % de mujeres en los parlamentos por región desde 1945 (WWII).
+3. Comprobar si los países más democráticos son también los más igualitarios.
+
+## Datos
+
+- Fuente: **Gapminder**, `r num(nrow(datos))` observaciones país-año de
+  `r n_distinct(datos$geo)` países (`r min(datos$anio)`-`r max(datos$anio)`).
+- **Democracia:** índice Polity5, de -10 (autocracia) a +10 (democracia).
+- **Igualdad de género:** índice de International IDEA (0-100) y
+  % de escaños parlamentarios ocupados por mujeres.
+- Año de referencia: **`r anio_ref`**, el último con datos de Polity5.
+
+## 1. Olas de democratización
+
+```{r olas}
+ggplot(regimenes, aes(anio, n, colour = regimen)) +
+  geom_line(linewidth = 1) +
+  scale_colour_manual(values = col_regimen) +
+  labs(x = NULL, y = "Número de países", colour = NULL) +
+  theme_minimal(base_size = 14)
+```
+
+De `r n_reg(1922, "Democracia")` democracias en 1922 a `r n_reg(1942, "Democracia")`
+en 1942, y a **`r n_reg(anio_ref, "Democracia")` en `r anio_ref`**.
+
+## 2. Mujeres en los parlamentos
+
+La mediana de los países pasa del **`r num(parl_mundo(1975), 1)` %** en 1975 al
+**`r num(parl_mundo(2021), 1)` %** en 2021.
+
+```{r tabla}
+# Tabla resumen por región en el año de referencia
+datos_ref |>
+  mutate(Región = factor(region4, levels = c("África", "América", "Asia", "Europa"))) |>
+  group_by(Región) |>
+  summarise(
+    `Países` = n(),
+    `% democracias` = 100 * mean(regimen == "Democracia", na.rm = TRUE),
+    `Igualdad IDEA (mediana)` = median(idea_igualdad_genero, na.rm = TRUE),
+    `% parlamentarias (mediana)` = median(mujeres_parlamento, na.rm = TRUE)
+  ) |>
+  knitr::kable(digits = 1, format.args = list(decimal.mark = ","),
+               caption = paste("Indicadores por región en", anio_ref))
+```
+
+## 2. Igualdad de género por región (`r anio_ref`)
+
+```{r boxplot}
+# Boxplot: cada caja resume los países de una región; los puntos son atípicos
+datos_ref |>
+  select(pais, region4, idea_igualdad_genero, mujeres_parlamento) |>
+  pivot_longer(c(idea_igualdad_genero, mujeres_parlamento),
+               names_to = "indicador", values_to = "valor") |>
+  filter(!is.na(valor)) |>
+  mutate(indicador = recode(indicador,
+                            idea_igualdad_genero = "Igualdad de género (IDEA, 0-100)",
+                            mujeres_parlamento = "Mujeres en el parlamento (%)")) |>
+  ggplot(aes(region4, valor, fill = region4)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = 21, outlier.size = 2.5) +
+  scale_fill_manual(values = col_region, guide = "none") +
+  facet_wrap(~ indicador, scales = "free_y") +
+  labs(x = NULL, y = NULL) +
+  theme_minimal(base_size = 14)
+```
+
+```{r atipicos}
+# País con más parlamentarias de cada región
+max_parl <- datos_ref |>
+  filter(!is.na(mujeres_parlamento)) |>
+  group_by(region4) |>
+  slice_max(mujeres_parlamento, n = 1)
+pais_max  <- function(r) max_parl$pais[max_parl$region4 == r]
+valor_max <- function(r) num(max_parl$mujeres_parlamento[max_parl$region4 == r])
+```
+
+Atípicos: **`r pais_max("África")`** (`r valor_max("África")` % de parlamentarias) y
+**`r pais_max("Asia")`** (`r valor_max("Asia")` %), sin ser democracias.
+
+## 3. Democracia e igualdad de género
+
+```{r relacion}
+ggplot(datos_ref |> filter(!is.na(polity), !is.na(idea_igualdad_genero)),
+       aes(polity, idea_igualdad_genero, colour = region4)) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  geom_smooth(aes(group = 1), method = "loess", colour = "grey30", se = FALSE) +
+  scale_colour_manual(values = col_region) +
+  labs(x = "Democracia (Polity5)", y = "Igualdad de género (IDEA)", colour = NULL) +
+  theme_minimal(base_size = 14)
+```
+
+Correlación con la igualdad de IDEA: **ρ = `r num(rho_igualdad, 2)`**.
+Con el % de parlamentarias, mucho más débil: ρ = `r num(rho_parlamento, 2)`.
+
+## Conclusiones
+
+- La democracia se ha extendido **por olas**, con retrocesos en el periodo de
+  entreguerras y un gran avance desde 1989.
+- La presencia de mujeres en los parlamentos ha **aumentado en todas las regiones**,
+  sobre todo desde el año 2000.
+- Democracia e igualdad de género **están relacionadas, pero no siempre van juntas**:
+  la representación parlamentaria femenina depende poco del régimen.
+- Son correlaciones, no relaciones causales.

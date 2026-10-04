@@ -92,6 +92,30 @@ graf2 <- ggplot(parlamento, aes(anio, mediana, colour = region4,
 ggplotly(graf2, tooltip = "text")
 ```
 
+Row {data-height=450}
+-----------------------------------------------------------------------
+
+### Igualdad de género por región en `r anio_ref` (IDEA, 0-100). Pasa el ratón por los puntos para ver el país
+
+```{r}
+# Boxplot: cada caja resume los países de una región; los puntos son atípicos
+plot_ly(datos_ref |> filter(!is.na(idea_igualdad_genero)),
+        x = ~region4, y = ~idea_igualdad_genero, color = ~region4, colors = col_region,
+        type = "box", boxpoints = "outliers", text = ~pais, hoverinfo = "text+y") |>
+  layout(showlegend = FALSE, xaxis = list(title = ""),
+         yaxis = list(title = "Igualdad de género (IDEA)"))
+```
+
+### Mujeres en el parlamento por región en `r anio_ref` (%)
+
+```{r}
+plot_ly(datos_ref |> filter(!is.na(mujeres_parlamento)),
+        x = ~region4, y = ~mujeres_parlamento, color = ~region4, colors = col_region,
+        type = "box", boxpoints = "outliers", text = ~pais, hoverinfo = "text+y") |>
+  layout(showlegend = FALSE, xaxis = list(title = ""),
+         yaxis = list(title = "% de escaños ocupados por mujeres"))
+```
+
 Row {data-height=550}
 -----------------------------------------------------------------------
 

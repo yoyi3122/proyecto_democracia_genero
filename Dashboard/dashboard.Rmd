@@ -1,0 +1,126 @@
+---
+title: "Democracia e igualdad de género en el mundo"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+---
+
+```{r setup, include=FALSE}
+# Paquetes
+library(flexdashboard)
+library(tidyverse)
+library(plotly)
+library(here)
+
+# Datos depurados (generados por Datos/depuracion.R)
+datos <- readRDS(here("Datos", "depurada", "democracia_genero.rds"))
+
+# Colores aptos para daltonismo (paleta Okabe-Ito)
+col_regimen <- c(Autocracia = "#D55E00", Anocracia = "#E69F00", Democracia = "#0072B2")
+col_region  <- c(África = "#E69F00", América = "#009E73", Asia = "#CC79A7", Europa = "#0072B2")
+
+# Año de referencia: el último con datos completos de democracia (Polity5)
+anio_ref <- 2018
+datos_ref <- datos |> filter(anio == anio_ref)
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Democracias en `r anio_ref`
+
+```{r}
+valueBox(sum(datos_ref$regimen == "Democracia", na.rm = TRUE),
+         caption = paste("democracias de", sum(!is.na(datos_ref$regimen)), "países en", anio_ref),
+         icon = "fa-landmark", color = "#0072B2")
+```
+
+### Mujeres en el parlamento en `r anio_ref`
+
+```{r}
+valueBox(paste0(round(median(datos_ref$mujeres_parlamento, na.rm = TRUE)), " %"),
+         caption = paste("de escaños ocupados por mujeres (mediana de los países) en", anio_ref),
+         icon = "fa-venus", color = "#CC79A7")
+```
+
+### Países que han tenido una jefa de Estado o de Gobierno
+
+```{r}
+valueBox(sum(datos$jefa_estado[datos$anio == 2019], na.rm = TRUE),
+         caption = "países han tenido alguna vez una jefa de Estado o de Gobierno (2019)",
+         icon = "fa-user", color = "#009E73")
+```
+
+Row {data-height=450}
+-----------------------------------------------------------------------
+
+### 1. Olas de democratización: número de países por tipo de régimen (Polity5)
+
+```{r}
+# Contamos cuántos países hay de cada régimen cada año
+regimenes <- datos |>
+  filter(!is.na(regimen)) |>
+  count(anio, regimen)
+
+graf1 <- ggplot(regimenes, aes(anio, n, colour = regimen,
+                               text = paste0(anio, "<br>", regimen, ": ", n, " países"))) +
+  geom_line(aes(group = regimen), linewidth = 0.8) +
+  scale_colour_manual(values = col_regimen) +
+  labs(x = NULL, y = "Número de países", colour = NULL) +
+  theme_minimal()
+
+ggplotly(graf1, tooltip = "text")
+```
+
+### 2. Mujeres en el parlamento por región (mediana de los países, %)
+
+```{r}
+# Mediana del % de mujeres en el parlamento por región y año
+parlamento <- datos |>
+  filter(!is.na(mujeres_parlamento)) |>
+  group_by(anio, region4) |>
+  summarise(mediana = median(mujeres_parlamento), .groups = "drop")
+
+graf2 <- ggplot(parlamento, aes(anio, mediana, colour = region4,
+                                text = paste0(region4, ", ", anio, ": ", round(mediana, 1), " %"))) +
+  geom_line(aes(group = region4), linewidth = 0.8) +
+  scale_colour_manual(values = col_region) +
+  labs(x = NULL, y = "% de escaños ocupados por mujeres", colour = NULL) +
+  theme_minimal()
+
+ggplotly(graf2, tooltip = "text")
+```
+
+Row {data-height=550}
+-----------------------------------------------------------------------
+
+### 3. ¿Los países más democráticos son más igualitarios? (pulsa ▶ o mueve el selector de año)
+
+```{r}
+# Un punto por país y año; el tamaño indica la población
+relacion <- datos |>
+  filter(anio >= 1975, anio <= anio_ref,
+         !is.na(polity), !is.na(idea_igualdad_genero))
+
+plot_ly(relacion,
+        x = ~polity, y = ~idea_igualdad_genero,
+        color = ~region4, colors = col_region,
+        size = ~poblacion, sizes = c(10, 600),
+        frame = ~anio,               # crea la animación por año
+        text = ~pais, hoverinfo = "text",
+        type = "scatter", mode = "markers",
+        marker = list(opacity = 0.7, line = list(width = 0))) |>
+  layout(xaxis = list(title = "Democracia (Polity5: -10 autocracia, +10 democracia)", range = c(-11, 11)),
+         yaxis = list(title = "Igualdad de género (IDEA, 0-100)", range = c(0, 100))) |>
+  animation_opts(frame = 400, transition = 0) |>
+  animation_slider(currentvalue = list(prefix = "Año: "))
+```
+
+Row {data-height=80}
+-----------------------------------------------------------------------
+
+### Fuente
+
+Datos: Gapminder (Polity5, International IDEA, Unión Interparlamentaria). Elaboración propia en R.
+Polity5 solo llega hasta `r anio_ref`. Las relaciones mostradas son correlaciones, no causas.

@@ -1,9 +1,8 @@
 # Democracia e igualdad de género en el mundo
 
-Proyecto de Ciencia de Datos reproducible · Módulo 8, Reto 2 · Idoia Garriz Galan
+Módulo 8, Reto 2 · Idoia Garriz Galan
 
-Analizamos con datos de [Gapminder](https://www.gapminder.org/) cómo han
-evolucionado la democracia y la igualdad de género en el mundo, y si avanzan juntas.
+Se alanizan los datos de [Gapminder](https://www.gapminder.org/) para analizar e ilustrar la evolución de la democracia y la igualdad de género en el mundo, y si avanzan juntas.
 
 ## Objetivos
 
@@ -13,7 +12,7 @@ de género en el mundo y estudiar su relación.
 **Objetivos específicos:**
 
 1. Ver cómo ha cambiado el número de democracias y autocracias desde 1800.
-2. Ver cómo ha crecido el porcentaje de mujeres en los parlamentos por región desde 1945.
+2. Ver cómo ha crecido el porcentaje de mujeres en los parlamentos por región desde 1945 (WWII).
 3. Comprobar si los países más democráticos son también los más igualitarios.
 
 ## Estructura
@@ -22,10 +21,10 @@ de género en el mundo y estudiar su relación.
 Datos/           datos originales, código de depuración y datos depurados
 Dashboard/       código y dashboard en HTML
 Informe/         informe técnico (knitr) en PDF
-Presentacion/    presentación (R Markdown)
+Presentacion/    presentación 
 ```
 
-## Cómo reproducirlo
+## Reproducir
 
 1. Abrir `proyecto_democracia_genero.Rproj` en RStudio.
 2. Ejecutar `Datos/depuracion.R`.

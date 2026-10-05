@@ -15,6 +15,15 @@ de género en el mundo y estudiar su relación.
 2. Ver cómo ha crecido el porcentaje de mujeres en los parlamentos por región desde 1945 (WWII).
 3. Comprobar si los países más democráticos son también los más igualitarios.
 
+**Posibles preguntas a responder/ Ejercicios:**
+
+1.	¿Cuántas democracias y autocracias ha habido en el mundo desde 1800? ¿Se aprecian las “olas de democratización”?
+2.	¿Cuándo empezaron las mujeres a ocupar escaños parlamentarios y cómo ha avanzado su presencia en cada región desde 1945?
+3.	¿Qué regiones son hoy más igualitarias y qué países se salen de lo habitual en su región?
+4.	¿Los países más democráticos son también los más igualitarios en género? ¿Ha cambiado esa relación desde 1975?
+5.	¿Cuántos países han tenido alguna vez una jefa de Estado o de Gobierno?
+
+
 ## Estructura
 
 ```
